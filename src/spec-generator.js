@@ -1,5 +1,71 @@
 import { FILE_TYPES } from "./index";
 
+const COLORS = {
+    INTERVAL: "#f70",
+    RULE: "black",
+    POINT: "#49A0F2",
+    BACKGROUD: "#f7f7f7"
+};
+
+const chromGrid = {
+    name: "chromGrid",
+    mark: "rule",
+    data: { name: "chromSizes" },
+    encoding: {
+        x: {
+            chrom: "name",
+            pos: "size",
+            type: "quantitative"
+        },
+        color: { value: "#d8d8d8" }
+    }
+};
+
+function createCredibleIntervalLayer(middle, { lower, upper, title, domain }) {
+    const layer = [];
+
+    if (lower && upper) {
+        layer.push({
+            mark: {
+                type: "rect",
+                minWidth: 2.0,
+                minOpacity: 1.0
+            },
+            encoding: {
+                y: {
+                    field: lower,
+                    type: "quantitative",
+                    title: null
+                },
+                y2: {
+                    field: upper
+                },
+                color: { value: COLORS.INTERVAL },
+                opacity: { value: 0.3 }
+            }
+        });
+    }
+
+    layer.push({
+        mark: {
+            type: "rule",
+            size: 3.0,
+            minLength: 3.0
+        },
+        encoding: {
+            y: {
+                field: middle,
+                type: "quantitative",
+                scale: { domain },
+                title
+            },
+            color: { value: COLORS.RULE }
+        }
+    });
+
+    return layer;
+}
+
 /**
  *
  * @param {Map<object, import("./index.js").UploadedFile>} files
@@ -15,20 +81,6 @@ export default function createSpec(files) {
         FILE_TYPES.CR,
         FILE_TYPES.HETS
     ].map(getData);
-
-    const chromGrid = {
-        name: "chromGrid",
-        mark: "rule",
-        data: { name: "chromSizes" },
-        encoding: {
-            x: {
-                chrom: "name",
-                pos: "size",
-                type: "quantitative"
-            },
-            color: { value: "#d8d8d8" }
-        }
-    };
 
     return {
         genome: {
@@ -61,7 +113,7 @@ export default function createSpec(files) {
 
             {
                 name: "logRTrack",
-                plotBackground: "#f7f7f7",
+                plotBackground: COLORS.BACKGROUD,
                 layer: [
                     chromGrid,
                     {
@@ -93,7 +145,7 @@ export default function createSpec(files) {
                                 title: null,
                                 scale: {}
                             },
-                            color: { value: "#49A0F2" },
+                            color: { value: COLORS.POINT },
                             size: { value: 150 },
                             opacity: { value: 0.25 },
                             strokeWidth: { value: 0 }
@@ -110,20 +162,14 @@ export default function createSpec(files) {
                             }
                         ],
 
-                        mark: {
-                            type: "rule",
-                            size: 3.0,
-                            minLength: 3.0
-                        },
-                        encoding: {
-                            y: {
-                                field: "LOG2_COPY_RATIO_POSTERIOR_50",
-                                type: "quantitative",
-                                title: "Log2 copy ratio",
-                                scale: {}
-                            },
-                            color: { value: "black" }
-                        }
+                        layer: createCredibleIntervalLayer(
+                            "LOG2_COPY_RATIO_POSTERIOR_50",
+                            {
+                                lower: "LOG2_COPY_RATIO_POSTERIOR_10",
+                                upper: "LOG2_COPY_RATIO_POSTERIOR_90",
+                                title: "Log2 copy ratio"
+                            }
+                        )
                     }
                 ]
             },
@@ -156,7 +202,7 @@ export default function createSpec(files) {
                                 type: "quantitative",
                                 title: null
                             },
-                            color: { value: "#49A0F2" },
+                            color: { value: COLORS.POINT },
                             size: { value: 150 },
                             opacity: { value: 0.3 },
                             strokeWidth: { value: 0 }
@@ -164,37 +210,44 @@ export default function createSpec(files) {
                     },
                     {
                         title: "Alternate-allele fraction",
-                        mark: {
-                            type: "rule",
-                            size: 3.0,
-                            minLength: 3.0
-                        },
-                        encoding: {
-                            y: {
-                                field: "MINOR_ALLELE_FRACTION_POSTERIOR_50",
-                                type: "quantitative",
-                                scale: { domain: [0, 1] },
-                                title: "Alternate-allele fraction"
+
+                        layer: [
+                            {
+                                layer: createCredibleIntervalLayer(
+                                    "MINOR_ALLELE_FRACTION_POSTERIOR_50",
+                                    {
+                                        lower:
+                                            "MINOR_ALLELE_FRACTION_POSTERIOR_10",
+                                        upper:
+                                            "MINOR_ALLELE_FRACTION_POSTERIOR_90",
+                                        title: "Alternate-allele fraction",
+                                        scale: [0, 1]
+                                    }
+                                )
                             },
-                            color: { value: "black" }
-                        }
-                    },
-                    {
-                        title: "Mean BAF",
-                        mark: {
-                            type: "rule",
-                            size: 3.0,
-                            minLength: 3.0
-                        },
-                        encoding: {
-                            y: {
-                                expr:
-                                    "1 - datum.MINOR_ALLELE_FRACTION_POSTERIOR_50",
-                                type: "quantitative",
-                                title: null
-                            },
-                            color: { value: "black" }
-                        }
+                            {
+                                transform: [10, 50, 90]
+                                    .map(
+                                        x =>
+                                            `MINOR_ALLELE_FRACTION_POSTERIOR_${x}`
+                                    )
+                                    .map(field => ({
+                                        type: "formula",
+                                        expr: `1 - datum.${field}`,
+                                        as: field
+                                    })),
+                                layer: createCredibleIntervalLayer(
+                                    "MINOR_ALLELE_FRACTION_POSTERIOR_50",
+                                    {
+                                        lower:
+                                            "MINOR_ALLELE_FRACTION_POSTERIOR_10",
+                                        upper:
+                                            "MINOR_ALLELE_FRACTION_POSTERIOR_90",
+                                        title: "Alternate-allele fraction"
+                                    }
+                                )
+                            }
+                        ]
                     }
                 ]
             },
