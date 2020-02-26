@@ -1,6 +1,6 @@
-# Segment-Model Spy
+# SegmentModel Spy
 
-Segment-Model Spy is a an interactive visualization tool for
+SegmentModel Spy is a an interactive visualization tool for
 [GATK](https://gatk.broadinstitute.org/)'s CNV segmentation results. In
 practice, it does (almost) all that
 [PlotModeledSegments](https://gatk.broadinstitute.org/hc/en-us/articles/360037593891-PlotModeledSegments)
