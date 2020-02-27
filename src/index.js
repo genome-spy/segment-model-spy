@@ -9,6 +9,8 @@ import { readFileAsync, iterateLines, waitForAnimationFrame } from "./utils";
 
 import "./style.scss";
 
+const GENOMES = ["hg38", "hg19", "hg18"];
+
 /**
  * @typedef {object} UploadedFile
  * @prop {string} name
@@ -70,6 +72,8 @@ class SegmentModelSpy {
     constructor() {
         /** @type {Map<object, UploadedFile} */
         this.files = new Map();
+        this.genome = GENOMES[0];
+
         this.dragging = false;
         this.genomeSpyLaunched = false;
 
@@ -113,6 +117,31 @@ class SegmentModelSpy {
             `;
         };
 
+        const getGenomeButtons = () => html`
+            <div class="btn-group" role="group">
+                ${GENOMES.map(
+                    g => html`
+                        <button
+                            type="button"
+                            @click=${() => this.selectGenome(g)}
+                            class="btn btn-secondary ${this.genome === g
+                                ? "active"
+                                : ""}"
+                        >
+                            ${g}
+                        </button>
+                    `
+                )}
+                <button
+                    type="button"
+                    @click=${() => this.selectGenome(undefined)}
+                    class="btn btn-secondary ${!this.genome ? "active" : ""}"
+                >
+                    .dict file
+                </button>
+            </div>
+        `;
+
         const getFileBox = () => html`
             <div
                 @dragenter=${this.drag}
@@ -130,7 +159,12 @@ class SegmentModelSpy {
                         1. Choose a genome assembly or a sequence dictionary
                     </h2>
 
-                    <p>TODO: Implement! Uses hg38 for now...</p>
+                    <p>
+                        Choosing a genome assembly instead of a sequence
+                        dictionary activates cytoband and RefSeq gene tracks.
+                    </p>
+
+                    ${getGenomeButtons()}
 
                     <h2>2. Select files</h2>
 
@@ -257,7 +291,12 @@ class SegmentModelSpy {
     async visualize() {
         this.closeVisualization();
 
-        const spec = createSpec(this.files);
+        if (!this.genome) {
+            alert("Oops, .dict files are not supported ... yet!");
+            return;
+        }
+
+        const spec = createSpec(this.files, this.genome);
         this.genomeSpyLaunched = true;
         this.render();
 
@@ -276,6 +315,11 @@ class SegmentModelSpy {
             this.genomeSpy = undefined;
         }
         this.genomeSpyLaunched = false;
+        this.render();
+    }
+
+    selectGenome(genome) {
+        this.genome = genome;
         this.render();
     }
 

@@ -69,8 +69,9 @@ function createCredibleIntervalLayer(middle, { lower, upper, title, domain }) {
 /**
  *
  * @param {Map<object, import("./index.js").UploadedFile>} files
+ * @param {string} [genome]
  */
-export default function createSpec(files) {
+export default function createSpec(files, genome) {
     const getData = /** @param {object} key */ key => {
         const uploadedFile = files.get(key);
         return uploadedFile ? uploadedFile.data : [];
@@ -84,7 +85,7 @@ export default function createSpec(files) {
 
     return {
         genome: {
-            name: "hg38"
+            name: genome
         },
 
         data: { values: segments },
