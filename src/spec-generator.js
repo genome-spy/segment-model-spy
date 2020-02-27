@@ -69,13 +69,21 @@ function createCredibleIntervalLayer(middle, { lower, upper, title, domain }) {
 /**
  *
  * @param {Map<object, import("./index.js").UploadedFile>} files
- * @param {string} [genome]
+ * @param {string} [genomeName]
  */
-export default function createSpec(files, genome) {
+export default function createSpec(files, genomeName) {
     const getData = /** @param {object} key */ key => {
         const uploadedFile = files.get(key);
         return uploadedFile ? uploadedFile.data : [];
     };
+
+    const genome = genomeName
+        ? {
+              name: genomeName
+          }
+        : {
+              contigs: files.get(FILE_TYPES.DICT).data
+          };
 
     const [segments, cr, hets] = [
         FILE_TYPES.SEG,
@@ -84,9 +92,7 @@ export default function createSpec(files, genome) {
     ].map(getData);
 
     return {
-        genome: {
-            name: genome
-        },
+        genome,
 
         data: { values: segments },
 
@@ -101,7 +107,7 @@ export default function createSpec(files, genome) {
         },
 
         concat: [
-            { import: { name: "cytobands" } },
+            ...(genomeName ? [{ import: { name: "cytobands" } }] : []),
 
             /*
             {
@@ -255,7 +261,7 @@ export default function createSpec(files, genome) {
 
             { import: { name: "genomeAxis" } },
 
-            { import: { name: "geneAnnotation" } }
+            ...(genomeName ? [{ import: { name: "geneAnnotation" } }] : [])
         ]
     };
 }

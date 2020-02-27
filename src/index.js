@@ -4,6 +4,7 @@ import { classMap } from "lit-html/directives/class-map.js";
 import { dsvFormat } from "d3-dsv";
 import { embed } from "genome-spy";
 
+import { parseSamHeader } from "./sam";
 import createSpec from "./spec-generator";
 import { readFileAsync, iterateLines, waitForAnimationFrame } from "./utils";
 
@@ -17,6 +18,17 @@ const GENOMES = ["hg38", "hg19", "hg18"];
  * @prop {object[]} data
  */
 
+/**
+ * @typedef {object} FileType
+ * @prop {string} name
+ * @prop {string} title
+ * @prop {string} example
+ * @prop {string} [column]
+ */
+
+/**
+ * @type {Record.<string, FileType>}
+ */
 export const FILE_TYPES = {
     HETS: {
         name: "HETS",
@@ -35,6 +47,12 @@ export const FILE_TYPES = {
         title: "Modeled segments",
         example: "tumor.modelFinal.seg",
         column: "LOG2_COPY_RATIO_POSTERIOR_50"
+    },
+    DICT: {
+        name: "DICT",
+        title: "Sequence dictionary",
+        example: "GRCh38.d1.vd1.fa.dict",
+        column: undefined
     }
 };
 
@@ -44,13 +62,16 @@ export const FILE_TYPES = {
  */
 function detectFileType(textContent) {
     const headerLine = findTsvHeader(textContent);
-    if (typeof headerLine === "string") {
+    if (typeof headerLine === "string" && headerLine !== "") {
         const columns = headerLine.split("\t");
         for (const type of Object.values(FILE_TYPES)) {
             if (type.column && columns.includes(type.column)) {
                 return type;
             }
         }
+    } else if (textContent[0] === "@") {
+        // Assume a dict file. TODO: Make more robust
+        return FILE_TYPES.DICT;
     }
 }
 
@@ -66,6 +87,19 @@ function findTsvHeader(text, commentPrefix = "@") {
             return line;
         }
     }
+}
+
+function parseContigs(textContent) {
+    const header = parseSamHeader(textContent);
+
+    if (!header.SQ) {
+        throw new Error("The SAM header has no sequence dictionary!");
+    }
+
+    return header.SQ.map(record => ({
+        name: record.SN,
+        size: +record.LN
+    }));
 }
 
 class SegmentModelSpy {
@@ -180,7 +214,11 @@ class SegmentModelSpy {
                     </p>
 
                     <table class="file-table">
-                        ${Object.values(FILE_TYPES).map(getTableRow)}
+                        ${Object.values(FILE_TYPES)
+                            .filter(
+                                type => type !== FILE_TYPES.DICT || !this.genome
+                            )
+                            .map(getTableRow)}
                     </table>
 
                     <input
@@ -270,8 +308,17 @@ class SegmentModelSpy {
     }
 
     isReadyToVisualize() {
+        // Ugh, an immutable Map would be awesome!
+        const sampleFiles = new Map(
+            [...this.files.entries()].filter(
+                entry => entry[0] !== FILE_TYPES.DICT
+            )
+        );
+
         return (
-            this.files.size > 0 && [...this.files.values()].every(f => f.data)
+            sampleFiles.size > 0 &&
+            [...sampleFiles.values()].every(f => f.data) &&
+            (this.genome || this.files.has(FILE_TYPES.DICT))
         );
     }
 
@@ -290,11 +337,6 @@ class SegmentModelSpy {
 
     async visualize() {
         this.closeVisualization();
-
-        if (!this.genome) {
-            alert("Oops, .dict files are not supported ... yet!");
-            return;
-        }
 
         const spec = createSpec(this.files, this.genome);
         this.genomeSpyLaunched = true;
@@ -388,16 +430,28 @@ class SegmentModelSpy {
             } else {
                 alert(`Cannot recognise this file: ${file.name}.`);
             }
+
+            // Automatically disable genome assmbly if user adds a dict file
+            if (type === FILE_TYPES.DICT) {
+                this.genome = undefined;
+            }
         }
 
         for (const pendingFile of pendingFiles) {
             this.render();
+            // Give the browser some time to update the UI
             await waitForAnimationFrame();
 
-            const parsed = dsvFormat("\t", { comment: "@" }).parse(
-                pendingFile.textContent,
-                converters[pendingFile.type.name]
-            );
+            let parsed;
+
+            if (pendingFile.type !== FILE_TYPES.DICT) {
+                parsed = dsvFormat("\t", { comment: "@" }).parse(
+                    pendingFile.textContent,
+                    converters[pendingFile.type.name]
+                );
+            } else {
+                parsed = parseContigs(pendingFile.textContent);
+            }
 
             this.files.set(pendingFile.type, {
                 name: pendingFile.file.name,
@@ -410,7 +464,11 @@ class SegmentModelSpy {
 
         // Let's jump straight into visualization if all the file types were added at the same time
         if (
-            new Set(pendingFiles.map(pf => pf.type)).size === 3 &&
+            new Set(
+                pendingFiles
+                    .map(pf => pf.type)
+                    .filter(pf => pf.type !== FILE_TYPES.DICT)
+            ).size === 3 &&
             this.isReadyToVisualize()
         ) {
             this.visualize();
