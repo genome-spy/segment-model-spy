@@ -66,6 +66,12 @@ function createCredibleIntervalLayer(middle, { lower, upper, title, domain }) {
     return layer;
 }
 
+function getGeometricZoomBound(intervalCount) {
+    // TODO: Implement in GenomeSpy as "auto"
+    // Come up with something a bit more sophisticated. Behavior with small counts could be better.
+    return Math.max(0, Math.log((intervalCount - 1000) / 4) / Math.log(3)) || 0;
+}
+
 /**
  *
  * @param {Map<object, import("./index.js").UploadedFile>} files
@@ -109,15 +115,6 @@ export default function createSpec(files, genomeName) {
         concat: [
             ...(genomeName ? [{ import: { name: "cytobands" } }] : []),
 
-            /*
-            {
-                import: {
-                    url:
-                        "https://genomespy.app/tracks/encode-blacklist/hg38-blacklist.v2.json"
-                }
-            },
-            */
-
             {
                 name: "logRTrack",
                 plotBackground: COLORS.BACKGROUD,
@@ -137,7 +134,7 @@ export default function createSpec(files, genomeName) {
 
                         mark: {
                             type: "point",
-                            geometricZoomBound: 12
+                            geometricZoomBound: getGeometricZoomBound(cr.length)
                         },
 
                         encoding: {
@@ -194,7 +191,9 @@ export default function createSpec(files, genomeName) {
 
                         mark: {
                             type: "point",
-                            geometricZoomBound: 11
+                            geometricZoomBound: getGeometricZoomBound(
+                                hets.length
+                            )
                         },
 
                         encoding: {
