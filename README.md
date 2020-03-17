@@ -8,11 +8,19 @@ does but adds continuous panning and zooming and provides a few annotation track
 Under the hood, SegmentModel Spy uses
 [GenomeSpy](https://github.com/tuner/genome-spy) for WebGL-based rendering.
 
-A live version is available at https://genomespy.app/segmentmodel/
+An online version is available at https://genomespy.app/segmentmodel/
 
 <p align="center">
   <img width="480" height="270" src="docs/video.gif" />
 </p>
+
+## Local installation (for development)
+
+1. `git clone git@github.com:tuner/segment-model-spy.git`
+2. `cd segment-model-spy`
+3. `npm install`
+4. `npm start`
+5. Browse to http://localhost:8080/ or whatever port is shown on the console.
 
 ## Legal stuff
 
