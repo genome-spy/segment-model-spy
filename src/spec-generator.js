@@ -113,7 +113,16 @@ export default function createSpec(files, genomeName) {
         },
 
         concat: [
-            ...(genomeName ? [{ import: { name: "cytobands" } }] : []),
+            ...(genomeName
+                ? [
+                      { import: { name: "cytobands" } },
+                      {
+                          import: {
+                              url: `https://genomespy.app/tracks/gc-content/gc-content.${genomeName}.json`
+                          }
+                      }
+                  ]
+                : []),
 
             {
                 name: "logRTrack",

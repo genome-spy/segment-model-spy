@@ -10,7 +10,7 @@ import { readFileAsync, iterateLines, waitForAnimationFrame } from "./utils";
 
 import "./style.scss";
 
-const GENOMES = ["hg38", "hg19", "hg18"];
+const GENOMES = ["hg38", "hg19"];
 
 /**
  * @typedef {object} UploadedFile
@@ -195,7 +195,8 @@ class SegmentModelSpy {
 
                     <p>
                         Choosing a genome assembly instead of a sequence
-                        dictionary activates cytoband and RefSeq gene tracks.
+                        dictionary activates cytoband, GC content, and RefSeq
+                        gene tracks.
                     </p>
 
                     ${getGenomeButtons()}
