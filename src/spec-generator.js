@@ -80,7 +80,30 @@ function getGeometricZoomBound(intervalCount) {
 export default function createSpec(files, genomeName) {
     const getData = /** @param {object} key */ key => {
         const uploadedFile = files.get(key);
-        return uploadedFile ? uploadedFile.data : [];
+        const data = uploadedFile ? uploadedFile.data : [];
+
+        if (/^hg\d+/.test(genomeName)) {
+            // TODO: Should be done in GenomeSpy
+            // This looks overly complex but is over 50% faster than just testing every datum with the regex
+            /** @type {string} */
+            let prevContig;
+            const tester = d => {
+                const contig = d.contig;
+                if (contig === prevContig) {
+                    return true;
+                } else {
+                    if (/^(chr)?(\d{1,2}|[XY])$/.test(contig)) {
+                        prevContig = contig;
+                        return true;
+                    } else {
+                        prevContig = "";
+                        return false;
+                    }
+                }
+            };
+            return data.filter(tester);
+        }
+        return data;
     };
 
     const genome = genomeName

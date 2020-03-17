@@ -275,7 +275,6 @@ class SegmentModelSpy {
     }
 
     _getToolbarTemplate() {
-        // TODO: Fix the xScale hack. Provide an "initialized" property
         return html`
             <div class="buttons ${this.genomeSpy ? "visible" : "hidden"}">
                 <button @click=${this.closeVisualization}>
