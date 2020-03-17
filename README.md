@@ -10,6 +10,10 @@ Under the hood, SegmentModel Spy uses
 
 A live version is available at https://genomespy.app/segmentmodel/
 
+<p align="center">
+  <img width="480" height="270" src="docs/video.gif" />
+</p>
+
 ## Legal stuff
 
 Copyright (c) 2020 Kari Lavikka. See [LICENSE](LICENSE) for details.
