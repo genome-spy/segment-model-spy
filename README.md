@@ -22,6 +22,11 @@ An online version is available at https://genomespy.app/segmentmodel/
 4. `npm start`
 5. Browse to http://localhost:8080/ or whatever port is shown on the console.
 
+## N.B. Ancient GenomeSpy Version
+
+Apr 28, 2023 update: SegmentModel Spy currently uses an ancient version of
+GenomeSpy (0.0.3) and is being update to a recent one.
+
 ## Legal stuff and acknowledgements
 
 Copyright (c) 2020 Kari Lavikka. See [LICENSE](LICENSE) for details.
