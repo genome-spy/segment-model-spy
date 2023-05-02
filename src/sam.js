@@ -1,4 +1,4 @@
-import { iterateLines } from "./utils";
+import { iterateLines } from "./utils.js";
 
 /**
  * Parses a SAM header.
@@ -29,11 +29,11 @@ export function parseSamHeader(textContent) {
                 const record = Object.fromEntries(
                     match[2]
                         .split("\t")
-                        .map(token =>
+                        .map((token) =>
                             token.match(/^([A-Za-z][A-Za-z0-9]):(.*)/)
                         )
-                        .filter(match => match)
-                        .map(match => match.slice(1))
+                        .filter((match) => match)
+                        .map((match) => match.slice(1))
                 );
                 addRecord(type, record);
             }
