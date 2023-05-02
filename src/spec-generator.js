@@ -159,6 +159,9 @@ export default function createSpec(files, genomeName) {
                         pos: "start",
                         type: "locus",
                         offset: -1,
+                        axis: {
+                            title: null,
+                        },
                     },
                     x2: { chrom: "contig", pos: "end" },
                 },
