@@ -353,7 +353,7 @@ class SegmentModelSpy {
 
     closeVisualization() {
         if (this.genomeSpy) {
-            this.genomeSpy.destroy();
+            this.genomeSpy.finalize();
             this.genomeSpy = undefined;
         }
         this.genomeSpyLaunched = false;
