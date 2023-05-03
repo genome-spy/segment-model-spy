@@ -280,29 +280,25 @@ export default function createSpec(files, genomeName) {
                                             }
                                         ),
                                     },
-                                    // TODO: GenomeSpy should insert an implicit "clone" transform here.
-                                    // But it doesn't. It's a bug.
-                                    /*
-                            {
-                                transform: [10, 50, 90]
-                                    .map(
-                                        (x) =>
-                                            `MINOR_ALLELE_FRACTION_POSTERIOR_${x}`
-                                    )
-                                    .map((field) => ({
-                                        type: "formula",
-                                        expr: `1 - datum.${field}`,
-                                        as: field,
-                                    })),
-                                layer: createCredibleIntervalLayer(
-                                    "MINOR_ALLELE_FRACTION_POSTERIOR_50",
                                     {
-                                        lower: "MINOR_ALLELE_FRACTION_POSTERIOR_10",
-                                        upper: "MINOR_ALLELE_FRACTION_POSTERIOR_90",
-                                    }
-                                ),
-                            },
-                            */
+                                        transform: [10, 50, 90]
+                                            .map(
+                                                (x) =>
+                                                    `MINOR_ALLELE_FRACTION_POSTERIOR_${x}`
+                                            )
+                                            .map((field) => ({
+                                                type: "formula",
+                                                expr: `1 - datum.${field}`,
+                                                as: field,
+                                            })),
+                                        layer: createCredibleIntervalLayer(
+                                            "MINOR_ALLELE_FRACTION_POSTERIOR_50",
+                                            {
+                                                lower: "MINOR_ALLELE_FRACTION_POSTERIOR_10",
+                                                upper: "MINOR_ALLELE_FRACTION_POSTERIOR_90",
+                                            }
+                                        ),
+                                    },
                                 ],
                             },
                         ],
