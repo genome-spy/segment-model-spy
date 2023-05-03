@@ -6,7 +6,14 @@ import { embed } from "@genome-spy/core";
 
 import { parseSamHeader } from "./sam.js";
 import createSpec from "./spec-generator.js";
-import { readFileAsync, iterateLines, waitForAnimationFrame } from "./utils.js";
+import {
+    iterateLines,
+    waitForAnimationFrame,
+    uploadedFileToVirtualFile,
+    fetchToVirtualFile,
+} from "./utils.js";
+
+import spinnerImg from "./img/Ajax-loader.gif";
 
 import "./style.scss";
 import "@genome-spy/core/style.css";
@@ -90,6 +97,9 @@ function findTsvHeader(text, commentPrefix = "@") {
     }
 }
 
+/**
+ * @param {string} textContent
+ */
 function parseContigs(textContent) {
     const header = parseSamHeader(textContent);
 
@@ -112,11 +122,13 @@ class SegmentModelSpy {
         this.dragging = false;
         this.genomeSpyLaunched = false;
 
+        this.loadingExampleData = false;
+
         this.render();
     }
 
     _getMainTemplate() {
-        const getTableRow = (type) => {
+        const getTableRow = (/** @type {FileType} */ type) => {
             const file = this.files.get(type);
 
             return html`
@@ -246,6 +258,39 @@ class SegmentModelSpy {
                         or drag and drop here.
                     </div>
 
+                    <h3>No files to play with?</h3>
+
+                    <p>Try the example data sets:</p>
+
+                    <div class="example-data-buttons">
+                        <button
+                            class="btn"
+                            ?disabled=${this.loadingExampleData}
+                            @click=${() =>
+                                this.loadExampleFiles("sample-subset")}
+                        >
+                            Load small data set
+                        </button>
+                        <button
+                            class="btn"
+                            ?disabled=${this.loadingExampleData}
+                            @click=${() => this.loadExampleFiles("sample")}
+                        >
+                            Load full data set
+                        </button>
+                        ${this.loadingExampleData
+                            ? html`<span class="loading"
+                                  ><img
+                                      src=${spinnerImg}
+                                      alt=""
+                                      width="16"
+                                      height="16"
+                                  />
+                                  <span>Loading...</span></span
+                              >`
+                            : ""}
+                    </div>
+
                     <h2>3. Explore the data</h2>
 
                     Zoom with the mouse wheel or touchpad, pan by dragging or
@@ -296,15 +341,20 @@ class SegmentModelSpy {
         }
     }
 
-    drop(e) {
+    /**
+     * @param {DragEvent} e
+     */
+    async drop(e) {
         e.stopPropagation();
         e.preventDefault();
         this.dragging = false;
 
         const dt = e.dataTransfer;
-        const files = dt.files;
+        const files = [...dt.files];
 
-        this.handleFiles(files);
+        this.handleFiles(
+            await Promise.all(files.map(uploadedFileToVirtualFile))
+        );
     }
 
     isReadyToVisualize() {
@@ -360,6 +410,9 @@ class SegmentModelSpy {
         this.render();
     }
 
+    /**
+     * @param {string} genome
+     */
     selectGenome(genome) {
         this.genome = genome;
         this.render();
@@ -369,12 +422,43 @@ class SegmentModelSpy {
      *
      * @param {InputEvent} event
      */
-    filesChosen(event) {
-        this.handleFiles(event.target.files);
+    async filesChosen(event) {
+        const files = [.../** @type {FileList} */ (event.target.files)];
+        this.handleFiles(
+            await Promise.all(files.map(uploadedFileToVirtualFile))
+        );
     }
 
+    /**
+     * @param {string} name
+     */
+    async loadExampleFiles(name) {
+        const path =
+            //"https://csbi.ltdk.helsinki.fi/pub/projects/segment-model-spy/"; // TODO: Fix CORS
+            "https://karilavikka.fi/segment-model-spy/";
+
+        this.loadingExampleData = true;
+        this.render();
+
+        const suffixes = [".hets.tsv", ".denoisedCR.tsv", ".modelFinal.seg"];
+        const urls = suffixes.map((suffix) => path + name + suffix);
+
+        try {
+            this.handleFiles(await Promise.all(urls.map(fetchToVirtualFile)));
+        } catch (e) {
+            alert("Failed to load example data. Please try again later.");
+        }
+
+        this.loadingExampleData = false;
+    }
+
+    /**
+     *
+     * @param {import("./utils.js").VirtualFile[]} files
+     */
     async handleFiles(files) {
-        const toNumber = (str) => (str !== "" ? +str : null);
+        const toNumber = (/** @type {string} */ str) =>
+            str !== "" ? +str : null;
 
         // Explicit conversion functions are faster than vega-loader's type conversions
         const converters = {
@@ -424,7 +508,7 @@ class SegmentModelSpy {
         const pendingFiles = [];
 
         for (const file of files) {
-            const textContent = await readFileAsync(file);
+            const textContent = file.textContent;
             const type = detectFileType(textContent);
             if (type) {
                 pendingFiles.push({ file, textContent, type });

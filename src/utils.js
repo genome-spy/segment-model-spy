@@ -36,11 +36,16 @@ export function* iterateLines(text) {
     }
 }
 
-// https://simon-schraeder.de/posts/filereader-async/
+/**
+ * https://simon-schraeder.de/posts/filereader-async/
+ *
+ * @param {File} file
+ * @returns {Promise<string>}
+ */
 export function readFileAsync(file) {
     return new Promise((resolve, reject) => {
         let reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
+        reader.onload = () => resolve(/** @type {string} */ (reader.result));
         reader.onerror = reject;
         reader.readAsText(file);
     });
@@ -52,4 +57,37 @@ export function waitForAnimationFrame() {
             window.requestAnimationFrame(resolve)
         )
     );
+}
+
+/**
+ * Interface to abstract away the difference between a File and a URL.
+ *
+ * @typedef {object} VirtualFile
+ * @prop {string} name
+ * @prop {number} size
+ * @prop {string} textContent
+ */
+
+/**
+ * @param {File} file
+ */
+export async function uploadedFileToVirtualFile(file) {
+    return {
+        name: file.name,
+        size: file.size,
+        textContent: await readFileAsync(file),
+    };
+}
+
+/**
+ * @param {string} url
+ */
+export async function fetchToVirtualFile(url) {
+    const response = await fetch(url);
+    const textContent = await response.text();
+    return {
+        name: url.match(/[^/]*$/)[0],
+        size: textContent.length,
+        textContent,
+    };
 }
