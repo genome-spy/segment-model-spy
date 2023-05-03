@@ -1,11 +1,12 @@
 # SegmentModel Spy
 
 SegmentModel Spy is a an interactive visualization tool for
-[GATK](https://gatk.broadinstitute.org/)'s CNV segmentation results. In
-practice, it does (almost) all that
+[GATK](https://gatk.broadinstitute.org/)'s
+[copy-number](https://en.wikipedia.org/wiki/Copy_number_variation) segmentation
+results. In practice, it does (almost) all that
 [PlotModeledSegments](https://gatk.broadinstitute.org/hc/en-us/articles/360037593891-PlotModeledSegments)
-does but adds continuous panning and zooming and provides a few annotation tracks.
-Under the hood, SegmentModel Spy uses
+does but adds continuous panning and zooming and provides a few annotation
+tracks. Under the hood, SegmentModel Spy uses
 [GenomeSpy](https://github.com/tuner/genome-spy) for WebGL-based rendering.
 
 An online version is available at https://genomespy.app/segmentmodel/
