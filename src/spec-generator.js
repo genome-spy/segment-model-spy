@@ -199,8 +199,11 @@ export default function createSpec(files, genomeName) {
                                     y: {
                                         field: "logR",
                                         type: "quantitative",
-                                        title: "",
+                                        title: "Log2 copy ratio",
                                         scale: {},
+                                        axis: {
+                                            maxExtent: 40,
+                                        },
                                     },
                                     color: { value: COLORS.POINT },
                                     size: { value: 150 },
@@ -222,7 +225,6 @@ export default function createSpec(files, genomeName) {
                                     {
                                         lower: "LOG2_COPY_RATIO_POSTERIOR_10",
                                         upper: "LOG2_COPY_RATIO_POSTERIOR_90",
-                                        title: "Log2 copy ratio",
                                     }
                                 ),
                             },
