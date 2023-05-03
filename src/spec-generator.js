@@ -87,7 +87,8 @@ export default function createSpec(files, genomeName) {
 
         if (/^hg\d+/.test(genomeName)) {
             // TODO: Should be done in GenomeSpy
-            // This looks overly complex but is over 50% faster than just testing every datum with the regex
+            // Filter out contigs that aren't chromosomes
+            // Caching looks overly complex but is over 50% faster than just testing every datum with the regex
             /** @type {string} */
             let prevContig;
             const tester = (d) => {
