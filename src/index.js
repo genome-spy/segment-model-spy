@@ -2,13 +2,14 @@ import { html, render } from "lit-html";
 import { classMap } from "lit-html/directives/class-map.js";
 
 import { dsvFormat } from "d3-dsv";
-import { embed } from "genome-spy";
+import { embed } from "@genome-spy/core";
 
-import { parseSamHeader } from "./sam";
-import createSpec from "./spec-generator";
-import { readFileAsync, iterateLines, waitForAnimationFrame } from "./utils";
+import { parseSamHeader } from "./sam.js";
+import createSpec from "./spec-generator.js";
+import { readFileAsync, iterateLines, waitForAnimationFrame } from "./utils.js";
 
 import "./style.scss";
+import "@genome-spy/core/style.css";
 
 const GENOMES = ["hg38", "hg19"];
 
@@ -34,26 +35,26 @@ export const FILE_TYPES = {
         name: "HETS",
         title: "Allelic counts",
         example: "tumor.hets.tsv",
-        column: "REF_COUNT"
+        column: "REF_COUNT",
     },
     CR: {
         name: "CR",
         title: "Denoised copy ratios",
         example: "tumor.denoisedCR.tsv",
-        column: "LOG2_COPY_RATIO"
+        column: "LOG2_COPY_RATIO",
     },
     SEG: {
         name: "SEG",
         title: "Modeled segments",
         example: "tumor.modelFinal.seg",
-        column: "LOG2_COPY_RATIO_POSTERIOR_50"
+        column: "LOG2_COPY_RATIO_POSTERIOR_50",
     },
     DICT: {
         name: "DICT",
         title: "Sequence dictionary",
         example: "GRCh38.d1.vd1.fa.dict",
-        column: undefined
-    }
+        column: undefined,
+    },
 };
 
 /**
@@ -96,15 +97,15 @@ function parseContigs(textContent) {
         throw new Error("The SAM header has no sequence dictionary!");
     }
 
-    return header.SQ.map(record => ({
+    return header.SQ.map((record) => ({
         name: record.SN,
-        size: +record.LN
+        size: +record.LN,
     }));
 }
 
 class SegmentModelSpy {
     constructor() {
-        /** @type {Map<object, UploadedFile} */
+        /** @type {Map<object, UploadedFile>} */
         this.files = new Map();
         this.genome = GENOMES[0];
 
@@ -115,7 +116,7 @@ class SegmentModelSpy {
     }
 
     _getMainTemplate() {
-        const getTableRow = type => {
+        const getTableRow = (type) => {
             const file = this.files.get(type);
 
             return html`
@@ -126,9 +127,7 @@ class SegmentModelSpy {
                               <td class="status okay">
                                   <span class="icon">&#x2714;</span>
                               </td>
-                              <td>
-                                  ${file.name}
-                              </td>
+                              <td>${file.name}</td>
                               <td>
                                   ${file.data
                                       ? `${file.data.length} records`
@@ -154,7 +153,7 @@ class SegmentModelSpy {
         const getGenomeButtons = () => html`
             <div class="btn-group" role="group">
                 ${GENOMES.map(
-                    g => html`
+                    (g) => html`
                         <button
                             type="button"
                             @click=${() => this.selectGenome(g)}
@@ -185,7 +184,7 @@ class SegmentModelSpy {
                 class=${classMap({
                     "drop-zone": true,
                     dragging: this.dragging,
-                    "active-panel": !this.genomeSpyLaunched
+                    "active-panel": !this.genomeSpyLaunched,
                 })}
             >
                 <div class="file-box">
@@ -217,7 +216,8 @@ class SegmentModelSpy {
                     <table class="file-table">
                         ${Object.values(FILE_TYPES)
                             .filter(
-                                type => type !== FILE_TYPES.DICT || !this.genome
+                                (type) =>
+                                    type !== FILE_TYPES.DICT || !this.genome
                             )
                             .map(getTableRow)}
                     </table>
@@ -235,7 +235,7 @@ class SegmentModelSpy {
                         <button
                             class="btn"
                             style="margin-right: 1em"
-                            @click=${e => {
+                            @click=${(e) => {
                                 document.getElementById("fileInput").click();
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -311,26 +311,26 @@ class SegmentModelSpy {
         // Ugh, an immutable Map would be awesome!
         const sampleFiles = new Map(
             [...this.files.entries()].filter(
-                entry => entry[0] !== FILE_TYPES.DICT
+                (entry) => entry[0] !== FILE_TYPES.DICT
             )
         );
 
         return (
             sampleFiles.size > 0 &&
-            [...sampleFiles.values()].every(f => f.data) &&
+            [...sampleFiles.values()].every((f) => f.data) &&
             (this.genome || this.files.has(FILE_TYPES.DICT))
         );
     }
 
     render() {
         render(this._getMainTemplate(), document.querySelector("main"), {
-            eventContext: this
+            eventContext: this,
         });
         render(
             this._getToolbarTemplate(),
             document.querySelector("header .toolbar"),
             {
-                eventContext: this
+                eventContext: this,
             }
         );
     }
@@ -339,13 +339,13 @@ class SegmentModelSpy {
         this.closeVisualization();
 
         const spec = createSpec(this.files, this.genome);
+        console.log(spec);
         this.genomeSpyLaunched = true;
         this.render();
 
         this.genomeSpy = await embed(
             document.querySelector("#genome-spy-container"),
-            spec,
-            { bare: true }
+            spec
         );
 
         this.render();
@@ -353,7 +353,7 @@ class SegmentModelSpy {
 
     closeVisualization() {
         if (this.genomeSpy) {
-            this.genomeSpy.destroy();
+            this.genomeSpy.finalize();
             this.genomeSpy = undefined;
         }
         this.genomeSpyLaunched = false;
@@ -374,21 +374,21 @@ class SegmentModelSpy {
     }
 
     async handleFiles(files) {
-        const toNumber = str => (str !== "" ? +str : null);
+        const toNumber = (str) => (str !== "" ? +str : null);
 
         // Explicit conversion functions are faster than vega-loader's type conversions
         const converters = {
-            [FILE_TYPES.HETS.name]: d => {
+            [FILE_TYPES.HETS.name]: (d) => {
                 const alt = +d.ALT_COUNT,
                     ref = +d.REF_COUNT;
                 return {
                     contig: d.CONTIG,
                     pos: +d.POSITION,
-                    baf: alt / (ref + alt)
+                    baf: alt / (ref + alt),
                 };
             },
 
-            [FILE_TYPES.CR.name]: d => {
+            [FILE_TYPES.CR.name]: (d) => {
                 const start = +d.START,
                     end = +d.END;
                 return {
@@ -396,11 +396,11 @@ class SegmentModelSpy {
                     start,
                     end,
                     pos: (start - 1 + end) / 2, // midpoint in zero-based half-open coordinates
-                    logR: toNumber(d.LOG2_COPY_RATIO)
+                    logR: toNumber(d.LOG2_COPY_RATIO),
                 };
             },
 
-            [FILE_TYPES.SEG.name]: d => ({
+            [FILE_TYPES.SEG.name]: (d) => ({
                 contig: d.CONTIG,
                 start: +d.START,
                 end: +d.END,
@@ -411,12 +411,14 @@ class SegmentModelSpy {
                     d.LOG2_COPY_RATIO_POSTERIOR_50
                 ),
                 LOG2_COPY_RATIO_POSTERIOR_90: +d.LOG2_COPY_RATIO_POSTERIOR_90,
-                MINOR_ALLELE_FRACTION_POSTERIOR_10: +d.MINOR_ALLELE_FRACTION_POSTERIOR_10,
+                MINOR_ALLELE_FRACTION_POSTERIOR_10:
+                    +d.MINOR_ALLELE_FRACTION_POSTERIOR_10,
                 MINOR_ALLELE_FRACTION_POSTERIOR_50: toNumber(
                     d.MINOR_ALLELE_FRACTION_POSTERIOR_50
                 ),
-                MINOR_ALLELE_FRACTION_POSTERIOR_90: +d.MINOR_ALLELE_FRACTION_POSTERIOR_90
-            })
+                MINOR_ALLELE_FRACTION_POSTERIOR_90:
+                    +d.MINOR_ALLELE_FRACTION_POSTERIOR_90,
+            }),
         };
 
         const pendingFiles = [];
@@ -455,7 +457,7 @@ class SegmentModelSpy {
 
             this.files.set(pendingFile.type, {
                 name: pendingFile.file.name,
-                data: parsed
+                data: parsed,
             });
         }
 
@@ -466,8 +468,8 @@ class SegmentModelSpy {
         if (
             new Set(
                 pendingFiles
-                    .map(pf => pf.type)
-                    .filter(pf => pf.type !== FILE_TYPES.DICT)
+                    .map((pf) => pf.type)
+                    .filter((pf) => pf.type !== FILE_TYPES.DICT)
             ).size === 3 &&
             this.isReadyToVisualize()
         ) {

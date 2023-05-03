@@ -22,18 +22,18 @@ An online version is available at https://genomespy.app/segmentmodel/
 4. `npm start`
 5. Browse to http://localhost:8080/ or whatever port is shown on the console.
 
-## N.B. Ancient GenomeSpy Version
-
-Apr 28, 2023 update: SegmentModel Spy currently uses an ancient version of
-GenomeSpy (0.0.3) and is being update to a recent one.
-
 ## Legal stuff and acknowledgements
 
-Copyright (c) 2020 Kari Lavikka. See [LICENSE](LICENSE) for details.
+Copyright (c) 2020, 2023 Kari Lavikka. See [LICENSE](LICENSE) for details.
 
 SegmentModel Spy is developed in [The Systems Biology of Drug Resistance in
-Cancer](https://www.helsinki.fi/en/researchgroups/systems-biology-of-drug-resistance-in-cancer) group at the University of Helsinki.
+Cancer](https://www.helsinki.fi/en/researchgroups/systems-biology-of-drug-resistance-in-cancer)
+group at the University of Helsinki.
 
-This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 667403 for HERCULES
+This project has received funding from the European Union's Horizon 2020
+research and innovation programme under grant agreement No. 965193
+([DECIDER](https://www.deciderproject.eu/)) and No. 667403
+([HERCULES](https://project-hercules.eu/)), the Sigrid Jusélius Foundation and
+the Cancer Foundation Finland.
 
 GATK is a trademark of the Broad Institute, Inc.
