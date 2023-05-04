@@ -8,6 +8,7 @@ results. In practice, it does (almost) all that
 does but adds continuous panning and zooming and provides a few annotation
 tracks. Under the hood, SegmentModel Spy uses
 [GenomeSpy](https://github.com/tuner/genome-spy) for WebGL-based rendering.
+This tool is also an example of how to use GenomeSpy in a web application.
 
 An online version is available at https://genomespy.app/segmentmodel/
 
