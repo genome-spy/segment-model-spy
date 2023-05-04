@@ -9,9 +9,14 @@ import { iterateLines } from "./utils.js";
  * @param {string} textContent
  */
 export function parseSamHeader(textContent) {
-    /** @type {Record.<string, object>[]} */
+    /** @type {Record<string, object[]>} */
     const records = {};
 
+    /**
+     *
+     * @param {string} type
+     * @param {object} record
+     */
     const addRecord = (type, record) => {
         if (!records[type]) {
             records[type] = [];
@@ -24,7 +29,7 @@ export function parseSamHeader(textContent) {
         if (match) {
             const type = match[1];
             if (type === "CO") {
-                addRecord(type, commentMatch[1]);
+                // TODO: Handle comments
             } else {
                 const record = Object.fromEntries(
                     match[2]

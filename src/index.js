@@ -107,7 +107,7 @@ function parseContigs(textContent) {
         throw new Error("The SAM header has no sequence dictionary!");
     }
 
-    return header.SQ.map((record) => ({
+    return header.SQ.map((/** @type {any} */ record) => ({
         name: record.SN,
         size: +record.LN,
     }));
@@ -406,7 +406,7 @@ function selectGenome(genome) {
  * @param {InputEvent} event
  */
 async function filesChosen(event) {
-    const files = [.../** @type {FileList} */ (event.target.files)];
+    const files = [.../** @type {HTMLInputElement} */ (event.target).files];
     handleFiles(await Promise.all(files.map(uploadedFileToVirtualFile)));
 }
 
@@ -440,7 +440,10 @@ async function loadExampleFiles(name) {
 async function handleFiles(files) {
     const toNumber = (/** @type {string} */ str) => (str !== "" ? +str : null);
 
-    // Explicit conversion functions are faster than vega-loader's type conversions
+    /**
+     * Explicit conversion functions are faster than vega-loader's type conversions
+     * @type {Record<string, (d: Record<string, any>) => Record<string, any>>}
+     */
     const converters = {
         [FILE_TYPES.HETS.name]: (d) => {
             const alt = +d.ALT_COUNT,
@@ -511,6 +514,7 @@ async function handleFiles(files) {
         let parsed;
 
         if (pendingFile.type !== FILE_TYPES.DICT) {
+            // @ts-expect-error - using a patched dsvFormat, no typings available
             parsed = dsvFormat("\t", { comment: "@" }).parse(
                 pendingFile.textContent,
                 converters[pendingFile.type.name]
@@ -530,11 +534,8 @@ async function handleFiles(files) {
 
     // Let's jump straight into visualization if all the file types were added at the same time
     if (
-        new Set(
-            pendingFiles
-                .map((pf) => pf.type)
-                .filter((pf) => pf.type !== FILE_TYPES.DICT)
-        ).size === 3 &&
+        new Set(pendingFiles.filter((pf) => pf.type !== FILE_TYPES.DICT))
+            .size === 3 &&
         isReadyToVisualize()
     ) {
         visualize();
