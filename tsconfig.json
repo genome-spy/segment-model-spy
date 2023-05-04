@@ -9,6 +9,6 @@
     "target": "esnext",
     "strict": false,
     "noImplicitAny": true,
-    "types": []
+    "types": ["vite/client"]
   }
 }
