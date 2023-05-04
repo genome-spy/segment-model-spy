@@ -15,14 +15,11 @@
   "dependencies": {
     "@genome-spy/core": "^0.30.3",
     "d3-dsv": "tuner/d3-dsv#4280908",
-    "lit-html": "^1.1.2"
+    "lit-html": "^2.7.3"
   },
   "devDependencies": {
-    "node-sass": "^7.0.1",
-    "rollup-plugin-minify-html-literals": "^1.2.6",
     "rollup-plugin-minify-template-literals": "^1.1.0",
-    "sass": "^1.49.7",
-    "vite": "^4.1.4",
-    "vite-raw-plugin": "^1.0.1"
+    "sass": "^1.62.1",
+    "vite": "^4.1.4"
   }
 }
