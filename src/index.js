@@ -21,7 +21,7 @@ import "@genome-spy/core/style.css";
 const GENOMES = ["hg38", "hg19"];
 
 /**
- * @typedef {object} UploadedFile
+ * @typedef {object} ParsedFile
  * @prop {string} name
  * @prop {object[]} data
  */
@@ -35,7 +35,7 @@ const GENOMES = ["hg38", "hg19"];
  */
 
 /**
- * @type {Record.<string, FileType>}
+ * @type {Record<string, FileType>}
  */
 export const FILE_TYPES = {
     HETS: {
@@ -113,453 +113,430 @@ function parseContigs(textContent) {
     }));
 }
 
-class SegmentModelSpy {
-    constructor() {
-        /** @type {Map<object, UploadedFile>} */
-        this.files = new Map();
-        this.genome = GENOMES[0];
+/** @type {Map<object, ParsedFile>} */
+const parsedFiles = new Map();
+let genome = GENOMES[0];
 
-        this.dragging = false;
-        this.genomeSpyLaunched = false;
+/** @type {any} TODO: Type */
+let genomeSpy;
 
-        this.loadingExampleData = false;
+let dragging = false;
+let genomeSpyLaunched = false;
 
-        this.render();
-    }
+let loadingExampleData = false;
 
-    _getMainTemplate() {
-        const getTableRow = (/** @type {FileType} */ type) => {
-            const file = this.files.get(type);
+renderAll();
 
-            return html`
-                <tr>
-                    <td>${type.title}</td>
-                    ${file
-                        ? html`
-                              <td class="status okay">
-                                  <span class="icon">&#x2714;</span>
-                              </td>
-                              <td>${file.name}</td>
-                              <td>
-                                  ${file.data
-                                      ? `${file.data.length} records`
-                                      : "Parsing..."}
-                              </td>
-                          `
-                        : html`
-                              <td class="status">
-                                  <span class="icon">&#x2717;</span>
-                              </td>
-                              <td>
-                                  Missing.
-                                  <span class="example-file"
-                                      >Example: ${type.example}</span
-                                  >
-                              </td>
-                              <td></td>
-                          `}
-                </tr>
-            `;
-        };
+function getMainTemplate() {
+    const getTableRow = (/** @type {FileType} */ type) => {
+        const file = parsedFiles.get(type);
 
-        const getGenomeButtons = () => html`
-            <div class="btn-group" role="group">
-                ${GENOMES.map(
-                    (g) => html`
-                        <button
-                            type="button"
-                            @click=${() => this.selectGenome(g)}
-                            class="btn btn-secondary ${this.genome === g
-                                ? "active"
-                                : ""}"
-                        >
-                            ${g}
-                        </button>
-                    `
-                )}
-                <button
-                    type="button"
-                    @click=${() => this.selectGenome(undefined)}
-                    class="btn btn-secondary ${!this.genome ? "active" : ""}"
-                >
-                    .dict file
-                </button>
-            </div>
+        return html`
+            <tr>
+                <td>${type.title}</td>
+                ${file
+                    ? html`
+                          <td class="status okay">
+                              <span class="icon">&#x2714;</span>
+                          </td>
+                          <td>${file.name}</td>
+                          <td>
+                              ${file.data
+                                  ? `${file.data.length} records`
+                                  : "Parsing..."}
+                          </td>
+                      `
+                    : html`
+                          <td class="status">
+                              <span class="icon">&#x2717;</span>
+                          </td>
+                          <td>
+                              Missing.
+                              <span class="example-file"
+                                  >Example: ${type.example}</span
+                              >
+                          </td>
+                          <td></td>
+                      `}
+            </tr>
         `;
+    };
 
-        const getFileBox = () => html`
-            <div
-                @dragenter=${this.drag}
-                @dragover=${this.drag}
-                @dragleave=${this.drag}
-                @drop=${this.drop}
-                class=${classMap({
-                    "drop-zone": true,
-                    dragging: this.dragging,
-                    "active-panel": !this.genomeSpyLaunched,
-                })}
+    const getGenomeButtons = () => html`
+        <div class="btn-group" role="group">
+            ${GENOMES.map(
+                (g) => html`
+                    <button
+                        type="button"
+                        @click=${() => selectGenome(g)}
+                        class="btn btn-secondary ${genome === g
+                            ? "active"
+                            : ""}"
+                    >
+                        ${g}
+                    </button>
+                `
+            )}
+            <button
+                type="button"
+                @click=${() => selectGenome(undefined)}
+                class="btn btn-secondary ${!genome ? "active" : ""}"
             >
-                <div class="file-box">
-                    <h2>
-                        1. Choose a genome assembly or a sequence dictionary
-                    </h2>
+                .dict file
+            </button>
+        </div>
+    `;
 
-                    <p>
-                        Choosing a genome assembly instead of a sequence
-                        dictionary activates cytoband, GC content, and RefSeq
-                        gene tracks.
-                    </p>
+    const getFileBox = () => html`
+        <div
+            @dragenter=${drag}
+            @dragover=${drag}
+            @dragleave=${drag}
+            @drop=${drop}
+            class=${classMap({
+                "drop-zone": true,
+                dragging: dragging,
+                "active-panel": !genomeSpyLaunched,
+            })}
+        >
+            <div class="file-box">
+                <h2>1. Choose a genome assembly or a sequence dictionary</h2>
 
-                    ${getGenomeButtons()}
+                <p>
+                    Choosing a genome assembly instead of a sequence dictionary
+                    activates cytoband, GC content, and RefSeq gene tracks.
+                </p>
 
-                    <h2>2. Select files</h2>
+                ${getGenomeButtons()}
 
-                    <p>
-                        Please provide at least one of the following files to
-                        start visualizing. File types are detected from the TSV
-                        header row.
-                    </p>
+                <h2>2. Select files</h2>
 
-                    <p>
-                        N.B. All data processing takes place in your web
-                        browser. Nothing is uploaded anywhere.
-                    </p>
+                <p>
+                    Please provide at least one of the following files to start
+                    visualizing. File types are detected from the TSV header
+                    row.
+                </p>
 
-                    <table class="file-table">
-                        ${Object.values(FILE_TYPES)
-                            .filter(
-                                (type) =>
-                                    type !== FILE_TYPES.DICT || !this.genome
-                            )
-                            .map(getTableRow)}
-                    </table>
+                <p>
+                    N.B. All data processing takes place in your web browser.
+                    Nothing is uploaded anywhere.
+                </p>
 
-                    <input
-                        type="file"
-                        multiple
-                        accept=".tsv,.seg"
-                        id="fileInput"
-                        @change=${this.filesChosen}
-                        style="display:none"
-                    />
+                <table class="file-table">
+                    ${Object.values(FILE_TYPES)
+                        .filter((type) => type !== FILE_TYPES.DICT || !genome)
+                        .map(getTableRow)}
+                </table>
 
-                    <div class="upload-button-wrapper">
-                        <button
-                            class="btn"
-                            style="margin-right: 1em"
-                            @click=${(e) => {
-                                document.getElementById("fileInput").click();
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }}
-                        >
-                            Choose files
-                        </button>
-                        or drag and drop here.
-                    </div>
+                <input
+                    type="file"
+                    multiple
+                    accept=".tsv,.seg"
+                    id="fileInput"
+                    @change=${filesChosen}
+                    style="display:none"
+                />
 
-                    <h3>No files to play with?</h3>
+                <div class="upload-button-wrapper">
+                    <button
+                        class="btn"
+                        style="margin-right: 1em"
+                        @click=${(/** @type {MouseEvent} */ e) => {
+                            document.getElementById("fileInput").click();
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }}
+                    >
+                        Choose files
+                    </button>
+                    or drag and drop here.
+                </div>
 
-                    <p>Try the example data sets:</p>
+                <h3>No files to play with?</h3>
 
-                    <div class="example-data-buttons">
-                        <button
-                            class="btn"
-                            ?disabled=${this.loadingExampleData}
-                            @click=${() =>
-                                this.loadExampleFiles("sample-subset")}
-                        >
-                            Load small data set
-                        </button>
-                        <button
-                            class="btn"
-                            ?disabled=${this.loadingExampleData}
-                            @click=${() => this.loadExampleFiles("sample")}
-                        >
-                            Load full data set
-                        </button>
-                        ${this.loadingExampleData
-                            ? html`<span class="loading"
-                                  ><img
-                                      src=${spinnerImg}
-                                      alt=""
-                                      width="16"
-                                      height="16"
-                                  />
-                                  <span>Loading...</span></span
-                              >`
-                            : ""}
-                    </div>
+                <p>Try the example data sets:</p>
 
-                    <h2>3. Explore the data</h2>
+                <div class="example-data-buttons">
+                    <button
+                        class="btn"
+                        ?disabled=${loadingExampleData}
+                        @click=${() => loadExampleFiles("sample-subset")}
+                    >
+                        Load small data set
+                    </button>
+                    <button
+                        class="btn"
+                        ?disabled=${loadingExampleData}
+                        @click=${() => loadExampleFiles("sample")}
+                    >
+                        Load full data set
+                    </button>
+                    ${loadingExampleData
+                        ? html`<span class="loading"
+                              ><img
+                                  src=${spinnerImg}
+                                  alt=""
+                                  width="16"
+                                  height="16"
+                              />
+                              <span>Loading...</span></span
+                          >`
+                        : ""}
+                </div>
 
-                    Zoom with the mouse wheel or touchpad, pan by dragging or
-                    with the touchpad. Hover an item to get details.
+                <h2>3. Explore the data</h2>
 
-                    <div class="buttons">
-                        <button
-                            ?disabled=${!this.isReadyToVisualize()}
-                            @click=${this.visualize}
-                            class="btn btn-lg"
-                        >
-                            Let's visualize!
-                        </button>
-                    </div>
+                Zoom with the mouse wheel or touchpad, pan by dragging or with
+                the touchpad. Hover an item to get details.
+
+                <div class="buttons">
+                    <button
+                        ?disabled=${!isReadyToVisualize()}
+                        @click=${visualize}
+                        class="btn btn-lg"
+                    >
+                        Let's visualize!
+                    </button>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
-        return html`
-            ${getFileBox()}
+    return html`
+        ${getFileBox()}
 
-            <div
-                id="genome-spy-container"
-                class=${classMap({ "active-panel": !!this.genomeSpyLaunched })}
-            ></div>
-        `;
-    }
-
-    _getToolbarTemplate() {
-        return html`
-            <div class="buttons ${this.genomeSpy ? "visible" : "hidden"}">
-                <button @click=${this.closeVisualization}>
-                    &#x21D0; Back to files
-                </button>
-            </div>
-        `;
-    }
-
-    drag(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        if (e.type === "dragleave") {
-            this.dragging = false;
-            this.render();
-        } else {
-            this.dragging = true;
-            this.render();
-        }
-    }
-
-    /**
-     * @param {DragEvent} e
-     */
-    async drop(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        this.dragging = false;
-
-        const dt = e.dataTransfer;
-        const files = [...dt.files];
-
-        this.handleFiles(
-            await Promise.all(files.map(uploadedFileToVirtualFile))
-        );
-    }
-
-    isReadyToVisualize() {
-        // Ugh, an immutable Map would be awesome!
-        const sampleFiles = new Map(
-            [...this.files.entries()].filter(
-                (entry) => entry[0] !== FILE_TYPES.DICT
-            )
-        );
-
-        return (
-            sampleFiles.size > 0 &&
-            [...sampleFiles.values()].every((f) => f.data) &&
-            (this.genome || this.files.has(FILE_TYPES.DICT))
-        );
-    }
-
-    render() {
-        render(this._getMainTemplate(), document.querySelector("main"), {
-            eventContext: this,
-        });
-        render(
-            this._getToolbarTemplate(),
-            document.querySelector("header .toolbar"),
-            {
-                eventContext: this,
-            }
-        );
-    }
-
-    async visualize() {
-        this.closeVisualization();
-
-        const spec = createSpec(this.files, this.genome);
-        console.log(spec);
-        this.genomeSpyLaunched = true;
-        this.render();
-
-        this.genomeSpy = await embed(
-            document.querySelector("#genome-spy-container"),
-            spec
-        );
-
-        this.render();
-    }
-
-    closeVisualization() {
-        if (this.genomeSpy) {
-            this.genomeSpy.finalize();
-            this.genomeSpy = undefined;
-        }
-        this.genomeSpyLaunched = false;
-        this.render();
-    }
-
-    /**
-     * @param {string} genome
-     */
-    selectGenome(genome) {
-        this.genome = genome;
-        this.render();
-    }
-
-    /**
-     *
-     * @param {InputEvent} event
-     */
-    async filesChosen(event) {
-        const files = [.../** @type {FileList} */ (event.target.files)];
-        this.handleFiles(
-            await Promise.all(files.map(uploadedFileToVirtualFile))
-        );
-    }
-
-    /**
-     * @param {string} name
-     */
-    async loadExampleFiles(name) {
-        const path =
-            //"https://csbi.ltdk.helsinki.fi/pub/projects/segment-model-spy/"; // TODO: Fix CORS
-            "https://karilavikka.fi/segment-model-spy/";
-
-        this.loadingExampleData = true;
-        this.render();
-
-        const suffixes = [".hets.tsv", ".denoisedCR.tsv", ".modelFinal.seg"];
-        const urls = suffixes.map((suffix) => path + name + suffix);
-
-        try {
-            this.handleFiles(await Promise.all(urls.map(fetchToVirtualFile)));
-        } catch (e) {
-            alert("Failed to load example data. Please try again later.");
-        }
-
-        this.loadingExampleData = false;
-    }
-
-    /**
-     *
-     * @param {import("./utils.js").VirtualFile[]} files
-     */
-    async handleFiles(files) {
-        const toNumber = (/** @type {string} */ str) =>
-            str !== "" ? +str : null;
-
-        // Explicit conversion functions are faster than vega-loader's type conversions
-        const converters = {
-            [FILE_TYPES.HETS.name]: (d) => {
-                const alt = +d.ALT_COUNT,
-                    ref = +d.REF_COUNT;
-                return {
-                    contig: d.CONTIG,
-                    pos: +d.POSITION,
-                    baf: alt / (ref + alt),
-                };
-            },
-
-            [FILE_TYPES.CR.name]: (d) => {
-                const start = +d.START,
-                    end = +d.END;
-                return {
-                    contig: d.CONTIG,
-                    start,
-                    end,
-                    pos: (start - 1 + end) / 2, // midpoint in zero-based half-open coordinates
-                    logR: toNumber(d.LOG2_COPY_RATIO),
-                };
-            },
-
-            [FILE_TYPES.SEG.name]: (d) => ({
-                contig: d.CONTIG,
-                start: +d.START,
-                end: +d.END,
-                NUM_POINTS_COPY_RATIO: +d.NUM_POINTS_COPY_RATIO,
-                NUM_POINTS_ALLELE_FRACTION: +d.NUM_POINTS_ALLELE_FRACTION,
-                LOG2_COPY_RATIO_POSTERIOR_10: +d.LOG2_COPY_RATIO_POSTERIOR_10,
-                LOG2_COPY_RATIO_POSTERIOR_50: toNumber(
-                    d.LOG2_COPY_RATIO_POSTERIOR_50
-                ),
-                LOG2_COPY_RATIO_POSTERIOR_90: +d.LOG2_COPY_RATIO_POSTERIOR_90,
-                MINOR_ALLELE_FRACTION_POSTERIOR_10:
-                    +d.MINOR_ALLELE_FRACTION_POSTERIOR_10,
-                MINOR_ALLELE_FRACTION_POSTERIOR_50: toNumber(
-                    d.MINOR_ALLELE_FRACTION_POSTERIOR_50
-                ),
-                MINOR_ALLELE_FRACTION_POSTERIOR_90:
-                    +d.MINOR_ALLELE_FRACTION_POSTERIOR_90,
-            }),
-        };
-
-        const pendingFiles = [];
-
-        for (const file of files) {
-            const textContent = file.textContent;
-            const type = detectFileType(textContent);
-            if (type) {
-                pendingFiles.push({ file, textContent, type });
-                this.files.set(type, { name: file.name, data: null });
-            } else {
-                alert(`Cannot recognise this file: ${file.name}.`);
-            }
-
-            // Automatically disable genome assmbly if user adds a dict file
-            if (type === FILE_TYPES.DICT) {
-                this.genome = undefined;
-            }
-        }
-
-        for (const pendingFile of pendingFiles) {
-            this.render();
-            // Give the browser some time to update the UI
-            await waitForAnimationFrame();
-
-            let parsed;
-
-            if (pendingFile.type !== FILE_TYPES.DICT) {
-                parsed = dsvFormat("\t", { comment: "@" }).parse(
-                    pendingFile.textContent,
-                    converters[pendingFile.type.name]
-                );
-            } else {
-                parsed = parseContigs(pendingFile.textContent);
-            }
-
-            this.files.set(pendingFile.type, {
-                name: pendingFile.file.name,
-                data: parsed,
-            });
-        }
-
-        await waitForAnimationFrame();
-        this.render();
-
-        // Let's jump straight into visualization if all the file types were added at the same time
-        if (
-            new Set(
-                pendingFiles
-                    .map((pf) => pf.type)
-                    .filter((pf) => pf.type !== FILE_TYPES.DICT)
-            ).size === 3 &&
-            this.isReadyToVisualize()
-        ) {
-            this.visualize();
-        }
-    }
+        <div
+            id="genome-spy-container"
+            class=${classMap({ "active-panel": !!genomeSpyLaunched })}
+        ></div>
+    `;
 }
 
-const smp = new SegmentModelSpy();
+function getToolbarTemplate() {
+    return html`
+        <div class="buttons ${genomeSpy ? "visible" : "hidden"}">
+            <button @click=${closeVisualization}>&#x21D0; Back to files</button>
+        </div>
+    `;
+}
+
+/**
+ * @param {DragEvent} e
+ */
+function drag(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    if (e.type === "dragleave") {
+        dragging = false;
+    } else {
+        dragging = true;
+    }
+    renderAll();
+}
+
+/**
+ * @param {DragEvent} e
+ */
+async function drop(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    dragging = false;
+
+    const dt = e.dataTransfer;
+    const files = [...dt.files];
+
+    handleFiles(await Promise.all(files.map(uploadedFileToVirtualFile)));
+}
+
+function isReadyToVisualize() {
+    // Ugh, an immutable Map would be awesome!
+    const sampleFiles = new Map(
+        [...parsedFiles.entries()].filter(
+            (entry) => entry[0] !== FILE_TYPES.DICT
+        )
+    );
+
+    return (
+        sampleFiles.size > 0 &&
+        [...sampleFiles.values()].every((f) => f.data) &&
+        (genome || parsedFiles.has(FILE_TYPES.DICT))
+    );
+}
+
+function renderAll() {
+    render(getMainTemplate(), document.querySelector("main"));
+    render(getToolbarTemplate(), document.querySelector("header .toolbar"));
+}
+
+async function visualize() {
+    closeVisualization();
+
+    const spec = createSpec(parsedFiles, genome);
+    console.log(spec);
+    genomeSpyLaunched = true;
+    renderAll();
+
+    genomeSpy = await embed(
+        document.querySelector("#genome-spy-container"),
+        spec
+    );
+
+    renderAll();
+}
+
+function closeVisualization() {
+    if (genomeSpy) {
+        genomeSpy.finalize();
+        genomeSpy = undefined;
+    }
+    genomeSpyLaunched = false;
+    renderAll();
+}
+
+/**
+ * @param {string} genome
+ */
+function selectGenome(genome) {
+    genome = genome;
+    renderAll();
+}
+
+/**
+ *
+ * @param {InputEvent} event
+ */
+async function filesChosen(event) {
+    const files = [.../** @type {FileList} */ (event.target.files)];
+    handleFiles(await Promise.all(files.map(uploadedFileToVirtualFile)));
+}
+
+/**
+ * @param {string} name
+ */
+async function loadExampleFiles(name) {
+    const path =
+        //"https://csbi.ltdk.helsinki.fi/pub/projects/segment-model-spy/"; // TODO: Fix CORS
+        "https://karilavikka.fi/segment-model-spy/";
+
+    loadingExampleData = true;
+    renderAll();
+
+    const suffixes = [".hets.tsv", ".denoisedCR.tsv", ".modelFinal.seg"];
+    const urls = suffixes.map((suffix) => path + name + suffix);
+
+    try {
+        handleFiles(await Promise.all(urls.map(fetchToVirtualFile)));
+    } catch (e) {
+        alert("Failed to load example data. Please try again later.");
+    }
+
+    loadingExampleData = false;
+}
+
+/**
+ *
+ * @param {import("./utils.js").VirtualFile[]} files
+ */
+async function handleFiles(files) {
+    const toNumber = (/** @type {string} */ str) => (str !== "" ? +str : null);
+
+    // Explicit conversion functions are faster than vega-loader's type conversions
+    const converters = {
+        [FILE_TYPES.HETS.name]: (d) => {
+            const alt = +d.ALT_COUNT,
+                ref = +d.REF_COUNT;
+            return {
+                contig: d.CONTIG,
+                pos: +d.POSITION,
+                baf: alt / (ref + alt),
+            };
+        },
+
+        [FILE_TYPES.CR.name]: (d) => {
+            const start = +d.START,
+                end = +d.END;
+            return {
+                contig: d.CONTIG,
+                start,
+                end,
+                pos: (start - 1 + end) / 2, // midpoint in zero-based half-open coordinates
+                logR: toNumber(d.LOG2_COPY_RATIO),
+            };
+        },
+
+        [FILE_TYPES.SEG.name]: (d) => ({
+            contig: d.CONTIG,
+            start: +d.START,
+            end: +d.END,
+            NUM_POINTS_COPY_RATIO: +d.NUM_POINTS_COPY_RATIO,
+            NUM_POINTS_ALLELE_FRACTION: +d.NUM_POINTS_ALLELE_FRACTION,
+            LOG2_COPY_RATIO_POSTERIOR_10: +d.LOG2_COPY_RATIO_POSTERIOR_10,
+            LOG2_COPY_RATIO_POSTERIOR_50: toNumber(
+                d.LOG2_COPY_RATIO_POSTERIOR_50
+            ),
+            LOG2_COPY_RATIO_POSTERIOR_90: +d.LOG2_COPY_RATIO_POSTERIOR_90,
+            MINOR_ALLELE_FRACTION_POSTERIOR_10:
+                +d.MINOR_ALLELE_FRACTION_POSTERIOR_10,
+            MINOR_ALLELE_FRACTION_POSTERIOR_50: toNumber(
+                d.MINOR_ALLELE_FRACTION_POSTERIOR_50
+            ),
+            MINOR_ALLELE_FRACTION_POSTERIOR_90:
+                +d.MINOR_ALLELE_FRACTION_POSTERIOR_90,
+        }),
+    };
+
+    const pendingFiles = [];
+
+    for (const file of files) {
+        const textContent = file.textContent;
+        const type = detectFileType(textContent);
+        if (type) {
+            pendingFiles.push({ file, textContent, type });
+            parsedFiles.set(type, { name: file.name, data: null });
+        } else {
+            alert(`Cannot recognise this file: ${file.name}.`);
+        }
+
+        // Automatically disable genome assmbly if user adds a dict file
+        if (type === FILE_TYPES.DICT) {
+            genome = undefined;
+        }
+    }
+
+    for (const pendingFile of pendingFiles) {
+        renderAll();
+        // Give the browser some time to update the UI
+        await waitForAnimationFrame();
+
+        let parsed;
+
+        if (pendingFile.type !== FILE_TYPES.DICT) {
+            parsed = dsvFormat("\t", { comment: "@" }).parse(
+                pendingFile.textContent,
+                converters[pendingFile.type.name]
+            );
+        } else {
+            parsed = parseContigs(pendingFile.textContent);
+        }
+
+        parsedFiles.set(pendingFile.type, {
+            name: pendingFile.file.name,
+            data: parsed,
+        });
+    }
+
+    await waitForAnimationFrame();
+    renderAll();
+
+    // Let's jump straight into visualization if all the file types were added at the same time
+    if (
+        new Set(
+            pendingFiles
+                .map((pf) => pf.type)
+                .filter((pf) => pf.type !== FILE_TYPES.DICT)
+        ).size === 3 &&
+        isReadyToVisualize()
+    ) {
+        visualize();
+    }
+}
