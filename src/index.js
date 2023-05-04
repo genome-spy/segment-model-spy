@@ -306,10 +306,10 @@ function closeVisualization() {
 }
 
 /**
- * @param {string} genome
+ * @param {string} newGenome
  */
-function selectGenome(genome) {
-    genome = genome;
+function selectGenome(newGenome) {
+    genome = newGenome;
     renderAll();
 }
 
