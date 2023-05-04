@@ -25,6 +25,12 @@ const chromGrid = {
     },
 };
 
+/**
+ *
+ * @param {string} middle
+ * @param {{lower: string, upper: string}} param1
+ * @returns
+ */
 function createCredibleIntervalLayer(middle, { lower, upper }) {
     const layer = [];
 
@@ -39,7 +45,7 @@ function createCredibleIntervalLayer(middle, { lower, upper }) {
                 y: {
                     field: lower,
                     type: "quantitative",
-                    title: null,
+                    title: /** @type {string} */ (null),
                 },
                 y2: {
                     field: upper,
@@ -60,7 +66,7 @@ function createCredibleIntervalLayer(middle, { lower, upper }) {
             y: {
                 field: middle,
                 type: "quantitative",
-                title: null,
+                title: /** @type {string} */ (null),
             },
             color: { value: COLORS.RULE },
         },

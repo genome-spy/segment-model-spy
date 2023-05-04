@@ -2,20 +2,24 @@ import { html, render } from "lit-html";
 import { classMap } from "lit-html/directives/class-map.js";
 
 import { dsvFormat } from "d3-dsv";
+
+// @ts-ignore - TODO: Add types
 import { embed } from "@genome-spy/core";
 
 import createSpec from "./spec-generator.js";
+
 import {
     waitForAnimationFrame,
     uploadedFileToVirtualFile,
     fetchToVirtualFile,
 } from "./utils.js";
 
+import { FILE_TYPES, converters, detectFileType } from "./files.js";
+
 import spinnerImg from "./img/Ajax-loader.gif";
 
 import "./style.scss";
 import "@genome-spy/core/style.css";
-import { FILE_TYPES, converters, detectFileType } from "./files.js";
 
 const GENOMES = ["hg38", "hg19"];
 
@@ -277,7 +281,10 @@ function isReadyToVisualize() {
 
 function renderAll() {
     render(getMainTemplate(), document.querySelector("main"));
-    render(getToolbarTemplate(), document.querySelector("header .toolbar"));
+    render(
+        getToolbarTemplate(),
+        /** @type {HTMLElement} */ (document.querySelector("header .toolbar"))
+    );
 }
 
 async function visualize() {
