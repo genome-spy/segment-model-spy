@@ -18,11 +18,11 @@ An online version is available at https://genomespy.app/segmentmodel/
 
 ## Local installation (for development)
 
-1. `git clone git@github.com:tuner/segment-model-spy.git`
+1. `git clone git@github.com:genome-spy/segment-model-spy.git`
 2. `cd segment-model-spy`
 3. `npm install`
 4. `npm start`
-5. Browse to http://localhost:8080/ or whatever port is shown on the console.
+5. Browse to http://localhost:5173/ or whatever port is shown on the console.
 
 ## Legal stuff and acknowledgements
 
