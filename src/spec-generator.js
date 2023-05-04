@@ -1,4 +1,4 @@
-import { FILE_TYPES } from "./index.js";
+import { FILE_TYPES } from "./files.js";
 import makeIdeogramTrack from "./tracks/ideogram.js";
 import makeGcContentTrack from "./tracks/gc-content.js";
 import makeGeneAnnotationTrack from "./tracks/gene-annotation.js";
@@ -69,6 +69,9 @@ function createCredibleIntervalLayer(middle, { lower, upper }) {
     return layer;
 }
 
+/**
+ * @param {number} intervalCount
+ */
 function getGeometricZoomBound(intervalCount) {
     // TODO: Implement in GenomeSpy as "auto"
     // Come up with something a bit more sophisticated. Behavior with small counts could be better.
@@ -77,7 +80,7 @@ function getGeometricZoomBound(intervalCount) {
 
 /**
  *
- * @param {Map<object, import("./index.js").UploadedFile>} files
+ * @param {Map<object, import("./index.js").ParsedFile>} files
  * @param {string} [genomeName]
  */
 export default function createSpec(files, genomeName) {
