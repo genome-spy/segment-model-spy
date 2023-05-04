@@ -6,6 +6,7 @@ export default defineConfig({
     plugins: [minifyTemplateLiterals()],
     base: "./",
     build: {
+        emptyOutDir: true,
         rollupOptions: {},
         outDir: "../dist",
     },
