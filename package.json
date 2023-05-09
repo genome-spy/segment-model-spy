@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@genome-spy/core": "^0.30.3",
+    "@genome-spy/core": "^0.31.2",
     "d3-dsv": "tuner/d3-dsv#4280908",
     "lit-html": "^2.7.3"
   },

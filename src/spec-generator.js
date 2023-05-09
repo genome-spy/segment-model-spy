@@ -10,21 +10,6 @@ const COLORS = {
     BACKGROUD: "#f7f7f7",
 };
 
-const chromGrid = {
-    name: "chromGrid",
-    mark: "rule",
-    // TODO: Fix. Current GenomeSpy doesn't export chromSizes as named data
-    data: { name: "chromSizes" },
-    encoding: {
-        x: {
-            chrom: "name",
-            pos: "size",
-            type: "locus",
-        },
-        color: { value: "#d8d8d8" },
-    },
-};
-
 /**
  *
  * @param {string} middle
@@ -181,7 +166,6 @@ export default function createSpec(files, genomeName) {
                         name: "logRTrack",
                         view: { fill: COLORS.BACKGROUD, stroke: "gray" },
                         layer: [
-                            chromGrid,
                             {
                                 data: { values: cr },
 
@@ -205,6 +189,11 @@ export default function createSpec(files, genomeName) {
                                         chrom: "contig",
                                         pos: "pos",
                                         type: "locus",
+                                        axis: {
+                                            grid: true,
+                                            gridDash: [1, 5],
+                                            chromGrid: true,
+                                        },
                                     },
                                     y: {
                                         field: "logR",
@@ -247,7 +236,6 @@ export default function createSpec(files, genomeName) {
                         view: { fill: "#f7f7f7", stroke: "gray" },
 
                         layer: [
-                            chromGrid,
                             {
                                 data: { values: hets },
 
@@ -265,6 +253,11 @@ export default function createSpec(files, genomeName) {
                                         pos: "pos",
                                         offset: -0.5,
                                         type: "locus",
+                                        axis: {
+                                            grid: true,
+                                            gridDash: [1, 5],
+                                            chromGrid: true,
+                                        },
                                     },
                                     y: {
                                         field: "baf",
