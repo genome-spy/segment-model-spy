@@ -3,7 +3,6 @@ import { classMap } from "lit-html/directives/class-map.js";
 
 import { dsvFormat } from "d3-dsv";
 
-// @ts-ignore - TODO: Add types
 import { embed } from "@genome-spy/core";
 
 import createSpec from "./spec-generator.js";
@@ -19,7 +18,6 @@ import { FILE_TYPES, converters, detectFileType } from "./files.js";
 import spinnerImg from "./img/Ajax-loader.gif";
 
 import "./style.scss";
-import "@genome-spy/core/style.css";
 
 const GENOMES = ["hg38", "hg19"];
 
@@ -296,7 +294,9 @@ async function visualize() {
 
     // Embed GenomeSpy in the DOM
     genomeSpy = await embed(
-        document.querySelector("#genome-spy-container"),
+        /** @type {HTMLElement} */ (
+            document.querySelector("#genome-spy-container")
+        ),
         spec
     );
 
@@ -333,9 +333,7 @@ async function filesChosen(event) {
  * @param {string} name
  */
 async function loadExampleFiles(name) {
-    const path =
-        //"https://csbi.ltdk.helsinki.fi/pub/projects/segment-model-spy/"; // TODO: Fix CORS
-        "https://karilavikka.fi/segment-model-spy/";
+    const path = "https://data.genomespy.app/sample-data/segment-model-spy/";
 
     loadingExampleData = true;
     renderAll();
