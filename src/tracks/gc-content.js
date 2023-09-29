@@ -1,3 +1,5 @@
+import { COLORS } from "../spec-generator.js";
+
 /**
  * @param {string} genome
  */
@@ -7,7 +9,7 @@ const makeGcContentTrack = (genome) => ({
 
     height: 50,
 
-    view: { fill: "#f7f7f7", stroke: "gray" },
+    view: { fill: COLORS.BACKGROUD, stroke: "gray" },
 
     data: {
         url: `https://genomespy.app/tracks/gc-content/gc-intervals.${genome}.tsv`,
@@ -25,7 +27,6 @@ const makeGcContentTrack = (genome) => ({
             pos: "START",
             offset: -1,
             type: "locus",
-            axis: null,
         },
         x2: {
             chrom: "CONTIG",

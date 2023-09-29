@@ -3,11 +3,11 @@ import makeIdeogramTrack from "./tracks/ideogram.js";
 import makeGcContentTrack from "./tracks/gc-content.js";
 import makeGeneAnnotationTrack from "./tracks/gene-annotation.js";
 
-const COLORS = {
+export const COLORS = {
     INTERVAL: "#f70",
     RULE: "black",
     POINT: "#49A0F2",
-    BACKGROUD: "#f7f7f7",
+    BACKGROUD: "#f8f8f8",
 };
 
 /**
@@ -140,10 +140,12 @@ export default function createSpec(files, genomeName) {
 
         vconcat: [
             ...wrap(genomeName, makeIdeogramTrack),
-            ...wrap(genomeName, makeGcContentTrack),
             {
                 resolve: {
                     scale: {
+                        x: "shared",
+                    },
+                    axis: {
                         x: "shared",
                     },
                 },
@@ -162,6 +164,7 @@ export default function createSpec(files, genomeName) {
                 },
 
                 vconcat: [
+                    ...wrap(genomeName, makeGcContentTrack),
                     {
                         name: "logRTrack",
                         view: { fill: COLORS.BACKGROUD, stroke: "gray" },
@@ -233,7 +236,7 @@ export default function createSpec(files, genomeName) {
                     {
                         name: "bafTrack",
 
-                        view: { fill: "#f7f7f7", stroke: "gray" },
+                        view: { fill: COLORS.BACKGROUD, stroke: "gray" },
 
                         layer: [
                             {
