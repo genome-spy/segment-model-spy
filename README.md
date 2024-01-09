@@ -7,7 +7,7 @@ results. In practice, it does (almost) all that
 [PlotModeledSegments](https://gatk.broadinstitute.org/hc/en-us/articles/360037593891-PlotModeledSegments)
 does but adds continuous panning and zooming and provides a few annotation
 tracks. Under the hood, SegmentModel Spy uses
-[GenomeSpy](https://github.com/tuner/genome-spy) for WebGL-based rendering.
+[GenomeSpy](https://github.com/genome-spy/genome-spy) for WebGL-based rendering.
 This tool is also an example of how to use GenomeSpy in a web application.
 
 An online version is available at https://genomespy.app/segmentmodel/
@@ -26,7 +26,7 @@ An online version is available at https://genomespy.app/segmentmodel/
 
 ## Legal stuff and acknowledgements
 
-Copyright (c) 2020, 2023 Kari Lavikka. See [LICENSE](LICENSE) for details.
+Copyright (c) 2020-2024 Kari Lavikka. See [LICENSE](LICENSE) for details.
 
 SegmentModel Spy is developed in [The Systems Biology of Drug Resistance in
 Cancer](https://www.helsinki.fi/en/researchgroups/systems-biology-of-drug-resistance-in-cancer)
@@ -34,8 +34,8 @@ group at the University of Helsinki.
 
 This project has received funding from the European Union's Horizon 2020
 research and innovation programme under grant agreement No. 965193
-([DECIDER](https://www.deciderproject.eu/)) and No. 667403
-([HERCULES](https://project-hercules.eu/)), the Sigrid Jusélius Foundation and
+([DECIDER](https://www.deciderproject.eu/)) and No. 847912
+([RESCUER](https://www.rescuer.uio.no/)), the Sigrid Jusélius Foundation and
 the Cancer Foundation Finland.
 
 GATK is a trademark of the Broad Institute, Inc.
