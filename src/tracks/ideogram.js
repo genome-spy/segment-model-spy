@@ -4,6 +4,8 @@
 const makeIdeogramTrack = (genome) => ({
     name: "ideogram-track",
 
+    view: { stroke: "black" },
+
     height: 24,
     data: {
         url: `https://genomespy.app/data/genomes/${genome}/cytoBand.${genome}.tsv`,
