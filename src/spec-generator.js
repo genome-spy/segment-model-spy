@@ -73,6 +73,7 @@ function getGeometricZoomBound(intervalCount) {
  *
  * @param {Map<object, import("./index.js").ParsedFile>} files
  * @param {string} [genomeName]
+ * @returns {import("@genome-spy/core/spec/root.js").RootSpec}
  */
 export default function createSpec(files, genomeName) {
     const getData = /** @param {object} key */ (key) => {
