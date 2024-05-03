@@ -1,5 +1,7 @@
 # SegmentModel Spy
 
+[![DOI](https://zenodo.org/badge/243194915.svg)](https://zenodo.org/doi/10.5281/zenodo.11109667)
+
 SegmentModel Spy is a an interactive visualization tool for
 [GATK](https://gatk.broadinstitute.org/)'s
 [copy-number](https://en.wikipedia.org/wiki/Copy_number_variation) segmentation
