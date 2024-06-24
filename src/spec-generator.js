@@ -111,6 +111,7 @@ export default function createSpec(files, genomeName) {
           }
         : {
               contigs: files.get(FILE_TYPES.DICT).data,
+              name: "custom",
           };
 
     const [segments, cr, hets] = [

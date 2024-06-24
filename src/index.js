@@ -18,6 +18,7 @@ import { FILE_TYPES, converters, detectFileType } from "./files.js";
 import spinnerImg from "./img/Ajax-loader.gif";
 
 import "./style.scss";
+import { parseSamHeader } from "./sam.js";
 
 const GENOMES = ["hg38", "hg19"];
 
@@ -289,6 +290,7 @@ async function visualize() {
     closeVisualization();
 
     const spec = createSpec(parsedFiles, genome);
+    console.log(spec);
     genomeSpyLaunched = true;
     renderAll();
 
@@ -415,6 +417,10 @@ async function handleFiles(files) {
  * @returns {any[]}
  */
 function parseContigs(textContent) {
-    // TODO: Implement
-    throw new Error("Function not implemented.");
+    const header = parseSamHeader(textContent);
+
+    return header.SQ.map((/** @type {any} */ record) => ({
+        name: record.SN,
+        size: +record.LN,
+    }));
 }
