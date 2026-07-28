@@ -185,7 +185,7 @@ export default function createSpec(files, genomeName) {
                                     type: "point",
                                     tooltip: null,
                                     geometricZoomBound: getGeometricZoomBound(
-                                        cr.length
+                                        cr.length,
                                     ),
                                 },
 
@@ -204,10 +204,6 @@ export default function createSpec(files, genomeName) {
                                         field: "logR",
                                         type: "quantitative",
                                         title: "Log2 copy ratio",
-                                        scale: {},
-                                        axis: {
-                                            maxExtent: 40,
-                                        },
                                     },
                                     color: { value: COLORS.POINT },
                                     size: { value: 150 },
@@ -229,7 +225,7 @@ export default function createSpec(files, genomeName) {
                                     {
                                         lower: "LOG2_COPY_RATIO_POSTERIOR_10",
                                         upper: "LOG2_COPY_RATIO_POSTERIOR_90",
-                                    }
+                                    },
                                 ),
                             },
                         ],
@@ -248,7 +244,7 @@ export default function createSpec(files, genomeName) {
                                     type: "point",
                                     tooltip: null,
                                     geometricZoomBound: getGeometricZoomBound(
-                                        hets.length
+                                        hets.length,
                                     ),
                                 },
 
@@ -269,9 +265,6 @@ export default function createSpec(files, genomeName) {
                                         type: "quantitative",
                                         title: "Minor allele fraction",
                                         scale: { domain: [0, 1] },
-                                        axis: {
-                                            maxExtent: 40,
-                                        },
                                     },
                                     color: { value: COLORS.POINT },
                                     size: { value: 150 },
@@ -287,14 +280,14 @@ export default function createSpec(files, genomeName) {
                                             {
                                                 lower: "MINOR_ALLELE_FRACTION_POSTERIOR_10",
                                                 upper: "MINOR_ALLELE_FRACTION_POSTERIOR_90",
-                                            }
+                                            },
                                         ),
                                     },
                                     {
                                         transform: [10, 50, 90]
                                             .map(
                                                 (x) =>
-                                                    `MINOR_ALLELE_FRACTION_POSTERIOR_${x}`
+                                                    `MINOR_ALLELE_FRACTION_POSTERIOR_${x}`,
                                             )
                                             .map((field) => ({
                                                 type: "formula",
@@ -306,7 +299,7 @@ export default function createSpec(files, genomeName) {
                                             {
                                                 lower: "MINOR_ALLELE_FRACTION_POSTERIOR_10",
                                                 upper: "MINOR_ALLELE_FRACTION_POSTERIOR_90",
-                                            }
+                                            },
                                         ),
                                     },
                                 ],
@@ -318,5 +311,6 @@ export default function createSpec(files, genomeName) {
 
             ...wrap(genomeName, makeGeneAnnotationTrack),
         ],
+        config: { legend: { disable: true } },
     };
 }

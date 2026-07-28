@@ -13,13 +13,13 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@genome-spy/core": "^0.53.1",
+    "@genome-spy/core": "^0.81.0",
     "d3-dsv": "tuner/d3-dsv#4280908",
-    "lit-html": "^3.1.0"
+    "lit-html": "^3.3.3"
   },
   "devDependencies": {
     "rollup-plugin-minify-template-literals": "^1.1.0",
-    "sass": "^1.62.1",
-    "vite": "^4.1.4"
+    "sass": "^1.102.0",
+    "vite": "^8.1.5"
   }
 }

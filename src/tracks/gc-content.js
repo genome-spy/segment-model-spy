@@ -1,3 +1,4 @@
+import clamp from "@genome-spy/core/utils/clamp.js";
 import { COLORS } from "../spec-generator.js";
 
 /**
@@ -37,11 +38,9 @@ const makeGcContentTrack = (genome) => ({
             type: "quantitative",
             scale: {
                 domain: [0.3, 0.7],
+                clamp: true,
             },
             title: "GC cont.",
-            axis: {
-                maxExtent: 40,
-            },
         },
     },
 });

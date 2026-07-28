@@ -3,7 +3,7 @@ import { classMap } from "lit-html/directives/class-map.js";
 
 import { dsvFormat } from "d3-dsv";
 
-import { embed } from "@genome-spy/core";
+import { embed } from "@genome-spy/core/minimal";
 
 import createSpec from "./spec-generator.js";
 
@@ -90,7 +90,7 @@ function getMainTemplate() {
                     >
                         ${g}
                     </button>
-                `
+                `,
             )}
             <button
                 type="button"
@@ -267,8 +267,8 @@ function isReadyToVisualize() {
     // Ugh, an immutable Map would be awesome!
     const sampleFiles = new Map(
         [...parsedFiles.entries()].filter(
-            (entry) => entry[0] !== FILE_TYPES.DICT
-        )
+            (entry) => entry[0] !== FILE_TYPES.DICT,
+        ),
     );
 
     return (
@@ -282,7 +282,7 @@ function renderAll() {
     render(getMainTemplate(), document.querySelector("main"));
     render(
         getToolbarTemplate(),
-        /** @type {HTMLElement} */ (document.querySelector("header .toolbar"))
+        /** @type {HTMLElement} */ (document.querySelector("header .toolbar")),
     );
 }
 
@@ -299,7 +299,7 @@ async function visualize() {
         /** @type {HTMLElement} */ (
             document.querySelector("#genome-spy-container")
         ),
-        spec
+        spec,
     );
 
     renderAll();
@@ -386,7 +386,7 @@ async function handleFiles(files) {
             // @ts-expect-error - using a patched dsvFormat, no typings available
             parsed = dsvFormat("\t", { comment: "@" }).parse(
                 pendingFile.textContent,
-                converters[pendingFile.type.name]
+                converters[pendingFile.type.name],
             );
         } else {
             parsed = parseContigs(pendingFile.textContent);
