@@ -1,3 +1,5 @@
+@use "sass:color";
+
 @import url("https://fonts.googleapis.com/css2?family=Nunito&display=swap");
 
 $gutter: 10px;
@@ -219,16 +221,16 @@ $ui-btn-color: #548fcc;
     }
 
     &:hover:not(:disabled):not(.active) {
-        background-color: darken($ui-btn-color, 5%);
+        background-color: color.adjust($ui-btn-color, $lightness: -5%);
     }
 
     &:active:not(:disabled):not(.active) {
         box-shadow: $active-shadow, inset 0 3px 3px rgba(0, 0, 0, 0.2);
-        background-color: darken($ui-btn-color, 10%);
+        background-color: color.adjust($ui-btn-color, $lightness: -10%);
     }
 
     &.active {
-        background-color: darken($ui-btn-color, 20%);
+        background-color: color.adjust($ui-btn-color, $lightness: -20%);
         text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
     }
 
@@ -255,7 +257,7 @@ $ui-btn-color: #548fcc;
         }
 
         &:not(:last-child) {
-            border-right: 1px solid lighten($ui-btn-color, 10%);
+            border-right: 1px solid color.adjust($ui-btn-color, $lightness: 10%);
         }
     }
 }
