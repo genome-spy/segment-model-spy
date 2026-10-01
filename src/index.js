@@ -4,6 +4,7 @@ import { classMap } from "lit-html/directives/class-map.js";
 import { dsvFormat } from "d3-dsv";
 
 import { embed } from "@genome-spy/core/minimal";
+import "@genome-spy/core/rendering/webgl.js";
 
 import createSpec from "./spec-generator.js";
 
