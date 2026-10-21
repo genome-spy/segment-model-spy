@@ -12,7 +12,9 @@ tracks. Under the hood, SegmentModel Spy uses
 [GenomeSpy](https://github.com/genome-spy/genome-spy) for WebGL-based rendering.
 This tool is also an example of how to use GenomeSpy in a web application.
 
-An online version is available at https://genomespy.app/segmentmodel/
+An online version is available at
+[genomespy.app/segment-model-spy](https://genomespy.app/segment-model-spy/).
+It is also available at https://genomespy.app/segmentmodel/.
 
 <p align="center">
   <img width="480" height="270" src="docs/video.gif" />
@@ -25,6 +27,16 @@ An online version is available at https://genomespy.app/segmentmodel/
 3. `npm install`
 4. `npm start`
 5. Browse to http://localhost:5173/ or whatever port is shown on the console.
+
+## GitHub Pages deployment
+
+The [deployment workflow](.github/workflows/deploy-pages.yml) builds the app with
+`npm ci` and `npm run build`, then publishes `dist/` to GitHub Pages on every push
+to `master`. It can also be run manually from the repository's Actions tab.
+
+In the repository's **Settings → Pages**, the deployment source must be set to
+**GitHub Actions**. Vite's relative asset paths allow the same build to work under
+the repository's `/segment-model-spy/` path and on the existing host.
 
 ## Legal stuff and acknowledgements
 
