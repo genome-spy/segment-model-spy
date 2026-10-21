@@ -58,7 +58,7 @@ function getMainTemplate() {
                           <td>${file.name}</td>
                           <td>
                               ${file.data
-                                  ? `${file.data.length} records`
+                                  ? `${file.data.length} record${file.data.length === 1 ? "" : "s"}`
                                   : "Parsing..."}
                           </td>
                       `
@@ -67,7 +67,7 @@ function getMainTemplate() {
                               <span class="icon">&#x2717;</span>
                           </td>
                           <td>
-                              Missing.
+                              Not selected.
                               <span class="example-file"
                                   >Example: ${type.example}</span
                               >
@@ -98,7 +98,7 @@ function getMainTemplate() {
                 @click=${() => selectGenome(undefined)}
                 class="btn btn-secondary ${!genome ? "active" : ""}"
             >
-                .dict file
+                Sequence dictionary (.dict)
             </button>
         </div>
     `;
@@ -119,8 +119,9 @@ function getMainTemplate() {
                 <h2>1. Choose a genome assembly or a sequence dictionary</h2>
 
                 <p>
-                    Choosing a genome assembly instead of a sequence dictionary
-                    activates cytoband, GC content, and RefSeq gene tracks.
+                    Select a genome assembly to include cytoband, GC content,
+                    and RefSeq gene tracks, or use a sequence dictionary for a
+                    custom assembly.
                 </p>
 
                 ${getGenomeButtons()}
@@ -128,14 +129,13 @@ function getMainTemplate() {
                 <h2>2. Select files</h2>
 
                 <p>
-                    Please provide at least one of the following files to start
-                    visualizing. File types are detected from the TSV header
-                    row.
+                    Select at least one of the data files listed below to get
+                    started. File types are detected from the TSV header row.
                 </p>
 
                 <p>
-                    N.B. All data processing takes place in your web browser.
-                    Nothing is uploaded anywhere.
+                    Your files are processed entirely in your browser and are
+                    never uploaded.
                 </p>
 
                 <table class="file-table">
@@ -165,12 +165,12 @@ function getMainTemplate() {
                     >
                         Choose files
                     </button>
-                    or drag and drop here.
+                    or drag and drop files here.
                 </div>
 
-                <h3>No files to play with?</h3>
+                <h3>No data files?</h3>
 
-                <p>Try the example data sets:</p>
+                <p>Try an example dataset:</p>
 
                 <div class="example-data-buttons">
                     <button
@@ -178,14 +178,14 @@ function getMainTemplate() {
                         ?disabled=${loadingExampleData}
                         @click=${() => loadExampleFiles("sample-subset")}
                     >
-                        Load small data set
+                        Load small dataset
                     </button>
                     <button
                         class="btn"
                         ?disabled=${loadingExampleData}
                         @click=${() => loadExampleFiles("sample")}
                     >
-                        Load full data set
+                        Load full dataset
                     </button>
                     ${loadingExampleData
                         ? html`<span class="loading"
@@ -202,8 +202,8 @@ function getMainTemplate() {
 
                 <h2>3. Explore the data</h2>
 
-                Zoom with the mouse wheel or touchpad, pan by dragging or with
-                the touchpad. Hover an item to get details.
+                Use the mouse wheel or touchpad to zoom. Drag or use the
+                touchpad to pan. Hover over an item to see details.
 
                 <div class="buttons">
                     <button
@@ -211,7 +211,7 @@ function getMainTemplate() {
                         @click=${visualize}
                         class="btn btn-lg"
                     >
-                        Let's visualize!
+                        Visualize data
                     </button>
                 </div>
             </div>
@@ -347,7 +347,7 @@ async function loadExampleFiles(name) {
     try {
         handleFiles(await Promise.all(urls.map(fetchToVirtualFile)));
     } catch (e) {
-        alert("Failed to load example data. Please try again later.");
+        alert("Could not load the example data. Please try again later.");
     }
 
     loadingExampleData = false;
@@ -367,7 +367,9 @@ async function handleFiles(files) {
             pendingFiles.push({ file, textContent, type });
             parsedFiles.set(type, { name: file.name, data: null });
         } else {
-            alert(`Cannot recognise this file: ${file.name}.`);
+            alert(
+                `Unrecognized file type: ${file.name}. Check the file's header and try again.`,
+            );
         }
 
         // Automatically disable genome assmbly if user adds a dict file
